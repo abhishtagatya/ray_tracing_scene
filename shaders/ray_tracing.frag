@@ -66,6 +66,9 @@ uniform int spheres_count;
 // The number of iterations.
 uniform int iterations;
 
+// The light sphere radius
+uniform float sphere_light_radius;
+
 // The number of shadow samples.
 uniform int shadow_samples;
 
@@ -162,6 +165,8 @@ Hit Evaluate(Ray ray){
 	for(int i = 0; i < spheres_count; i++){
 		vec3 center = spheres[i].xyz;
 
+		if (spheres[i].w == 0) break; // Fix artifacts on hitting 0 radius light spheres
+
 		Hit intersection = RaySphereIntersection(ray, center, spheres[i].w, i, i >= 10);
 		if(intersection.t < closest_hit.t){
 			closest_hit = intersection;
@@ -171,11 +176,12 @@ Hit Evaluate(Ray ray){
     return closest_hit;
 }
 
+// Evaluates the intersections of the ray with the scene objects and returns the closes hit excluding light sources.
 Hit EvaluateExcludeLight(Ray ray){
 	// Sets the closes hit either to miss or to an intersection with the plane representing the ground.
 	Hit closest_hit = RayPlaneIntersection(ray, vec3(0, 1, 0), vec3(0));
 	
-	for(int i = 0; i < spheres_count - 3; i++){
+	for(int i = 0; i < spheres_count - lights_count; i++){
 		vec3 center = spheres[i].xyz;
 
 		Hit intersection = RaySphereIntersection(ray, center, spheres[i].w, i, i >= 10);
@@ -257,7 +263,7 @@ vec3 Trace(Ray ray) {
 			
 			float distance_from_light = length(L_not_normalize);
 
-			float radius = lights[j].position.w / distance_from_light;
+			float radius = sphere_light_radius / distance_from_light;
 			float atten_factor = 1.0 / (1 + 0.5 * distance_from_light);
             
 			vec3 color_t = vec3(0.0);
@@ -283,6 +289,7 @@ vec3 Trace(Ray ray) {
 		}
 
 		attenuation *= hit.material.diffuse * fresnel;
+		if (length(attenuation) < 1e-4) break; // Early exit on small attenuation
 
 		vec3 reflection = reflect(ray.direction, hit.normal);
 		ray = Ray(hit.intersection + epsilon * reflection, reflection);
@@ -301,10 +308,8 @@ float TraceDepth(Ray ray) {
 // ----------------------------------------------------------------------------
 void main()
 {
-	float aspect_ratio = resolution.x/resolution.x;
-
 	// We use the texture coordinates and the aspect ratio to map the coordinates to the screen space.
-	vec2 uv = (2.0 * in_data.tex_coord - 1.0) * vec2(aspect_ratio, 1.0);
+	vec2 uv = (2.0 * in_data.tex_coord - 1.0);
 
 	// Computes the ray origin and ray direction using the view matrix.
 	vec3 P = vec3(view_inv * projection_inv * vec4(uv, -1.0, 1.0));
@@ -322,7 +327,5 @@ void main()
 
     // Set the fragment depth
     gl_FragDepth = depth;
-
-
 	final_color = vec4(color, 1.0);
 }

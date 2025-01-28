@@ -125,6 +125,10 @@ protected:
 	/** Particle Size */
     float particle_size = 0.5f;
 
+    /** Speed of Light Sphere  */
+	float light_sphere_speed = 10.0f;
+
+	/** Global Time Delta */
     float t_delta = 0;
 
     // ----------------------------------------------------------------------------

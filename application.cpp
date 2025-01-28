@@ -219,7 +219,7 @@ void Application::update(float delta) {
     camera_ubo.set_view(lookAt(eye_position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     camera_ubo.update_opengl_data();
 
-    const float app_time_s = (float)elapsed_time * 0.001f;
+    float app_time_s = (float)elapsed_time * (light_sphere_speed / 10000);
     t_delta = delta;
 
     // Updates lights
@@ -302,6 +302,7 @@ void Application::ray_trace_snowman() {
     ray_tracing_program.uniform("resolution", glm::vec2(width, height));
     ray_tracing_program.uniform("spheres_count", static_cast<int>(snowman_size + light_count));
     ray_tracing_program.uniform("iterations", reflections);
+	ray_tracing_program.uniform("sphere_light_radius", sphere_light_radius);
 	ray_tracing_program.uniform("shadow_samples", shadow_samples);
 	ray_tracing_program.uniform("time", (float)elapsed_time * 0.001f);
     ray_tracing_program.uniform("use_ambient_occlusion", corrective_use_ambient_occlusion);
@@ -400,10 +401,7 @@ void Application::render_particles() {
 void Application::render_ui() {
     const float unit = ImGui::GetFontSize();
 
-    ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoDecoration);
-    ImGui::SetWindowSize(ImVec2(20 * unit, 17 * unit));
-    ImGui::SetWindowPos(ImVec2(2 * unit, 2 * unit));
-
+    ImGui::Begin("Settings");
     ImGui::PushItemWidth(150.f);
 
     std::string fps_cpu_string = "FPS (CPU): ";
@@ -424,6 +422,8 @@ void Application::render_ui() {
 
     ImGui::Checkbox("Show Particles", &show_particles);
 
+	ImGui::SliderFloat("Particle Size", &particle_size, 0.1f, 2.0f, "%.1f");
+	ImGui::SliderFloat("Sphere Light Speed", &light_sphere_speed, 0.0f, 10.0f, "%.1f");
     ImGui::SliderFloat("Sphere Light Radius", &sphere_light_radius, 0, 1, "%.1f");
     ImGui::SliderInt("Shadow Quality", &shadow_samples, 1, 128);
 
