@@ -119,14 +119,9 @@ void Application::prepare_particles() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, particle_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Particle) * desired_snow_count, particle_data.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    std::cout << sizeof(Particle) * desired_snow_count << std::endl;
-
 }
 
 void Application::update_particle_buffer() {
-
-    std::cout << sizeof(Particle) * desired_snow_count << std::endl;
 
     // Initialize random number generators
     std::random_device rd;
