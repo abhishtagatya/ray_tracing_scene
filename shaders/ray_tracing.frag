@@ -270,7 +270,7 @@ vec3 Trace(Ray ray) {
 
 			for (int k = 0; k < shadow_samples; k++) {
 				float v = float(k+1)*.152;
-				float random_value = random(vec2(gl_FragCoord.x, gl_FragCoord.y + j) * v + time * 1500. + 50.0);
+				float random_value = random(vec2(gl_FragCoord.x, gl_FragCoord.y + j) * v);
 				float random_angle = 2 * PI * random_value;
 				float random_radius = radius * sqrt(random_value);
 
